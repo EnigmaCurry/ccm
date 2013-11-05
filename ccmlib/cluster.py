@@ -205,13 +205,18 @@ class Cluster():
         marks = []
         for node in self.nodes.values():
             if not node.is_running():
+                # If the log file already exists, get the current mark
+                # before we start the node, otherwise mark it at 0:
+                mark = None
                 if os.path.exists(node.logfilename()):
                     marks.append((node, node.mark_log()))
                 else:
                     marks.append((node, 0))
-
                 p = node.start(update_pid=False, jvm_args=jvm_args, profile_options=profile_options)
                 started.append((node, p))
+                # ugly? indeed!
+                while not os.path.exists(node.logfilename()):
+                    time.sleep(.01)
 
         if no_wait and not verbose:
             time.sleep(2) # waiting 2 seconds to check for early errors and for the pid to be set
