@@ -219,6 +219,8 @@ class Cluster():
                     node.watch_log_for("Listening for thrift clients...", process=p, verbose=verbose, from_mark=mark)
                 except RuntimeError:
                     return None
+            if len(started) > 0:
+                self.__ensure_all_nodes_up_via_nodetool()
 
         self.__update_pids(started)
 
@@ -387,3 +389,11 @@ class Cluster():
             topology_file = os.path.join(node.get_conf_dir(), 'cassandra-topology.properties')
             with open(topology_file, 'w') as f:
                 f.write(content)
+
+    def __ensure_all_nodes_up_via_nodetool(self):
+        """Run 'nodetool status' and parse it's output to determine if all nodes are up"""
+        node1 = self.nodelist()[0]
+        out = node1.nodetool('status')
+        for node in self.nodelist():
+            if "UN  %s" % node.address() not in out:
+                raise AssertionError('Node is not up: %s' % node.address())

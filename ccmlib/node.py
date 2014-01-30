@@ -461,8 +461,10 @@ class Node():
         host = self.address()
         args = [ nodetool, '-h', host, '-p', str(self.jmx_port)]
         args += cmd.split()
-        p = subprocess.Popen(args, env=env)
+        p = subprocess.Popen(args, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         p.wait()
+        output, errors = p.communicate()
+        return output
 
     def scrub(self, options):
         cdir = self.get_cassandra_dir()
