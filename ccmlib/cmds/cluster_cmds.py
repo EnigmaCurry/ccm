@@ -105,6 +105,9 @@ class ClusterCreateCmd(Cmd):
         if cluster.version() >= "1.2" and self.options.vnodes:
             cluster.set_configuration_options({ 'num_tokens' : 256 })
 
+        if cluster.version() >= "2.1":
+            cluster.set_configuration_options({ 'memtable_allocation_type' : 'offheap_objects' })
+
         if not self.options.no_switch:
             common.switch_cluster(self.path, self.name)
             print_('Current cluster is now: %s' % self.name)
