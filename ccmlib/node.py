@@ -15,6 +15,7 @@ import subprocess
 import sys
 import time
 import yaml
+import shlex
 
 from ccmlib.repository import setup
 from ccmlib.cli_session import CliSession
@@ -713,8 +714,8 @@ class Node():
         env = common.make_cassandra_env(cdir, self.get_path())
         datafiles = self.__gather_sstables(datafile,keyspace,column_families)
 
-        for file in datafiles:
-            args = [ json2sstable, "-s", "-K " + ks, "-c " + cf, os.path.abspath(in_file.name), file ]
+        for datafile in datafiles:
+            args = shlex.split("{json2sstable} -s -K {ks} -c {cf} {in_file} {datafile}".format(**locals()))
             subprocess.call(args, env=env)
 
     def run_sstablesplit(self, datafile=None,  size=None, keyspace=None, column_families=None):
