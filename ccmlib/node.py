@@ -9,6 +9,7 @@ import glob
 import os
 import re
 import shutil
+import shlex
 import signal
 import stat
 import subprocess
@@ -714,7 +715,8 @@ class Node():
         datafiles = self.__gather_sstables(datafile,keyspace,column_families)
 
         for file in datafiles:
-            args = [ json2sstable, "-s", "-K " + ks, "-c " + cf, os.path.abspath(in_file.name), file ]
+            in_file_name = os.path.abspath(in_file.name)
+            args = shlex.split("{json2sstable} -s -K {ks} -c {cf} {in_file_name} {datafile}".format(**locals()))
             subprocess.call(args, env=env)
 
     def run_sstablesplit(self, datafile=None,  size=None, keyspace=None, column_families=None):
